@@ -8,7 +8,7 @@ Yet another code sandbox for agent RL training ... but in jupyter notebook style
 
 Usage:
 
-Step 1: Start a redis server, change the redis host, port, and password based on your redis.conf
+Step 1: Start a redis server, change the redis host, port, and password in `redis_client.py` based on your redis.conf
 
 Step 2: Start serving
 ```bash
