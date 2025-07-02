@@ -54,10 +54,33 @@ plt.axis('off')
 plt.show()
 """
 
+INITIALIZATION_CODE_TEMPLATE = """
+from PIL import Image
+import base64
+from io import BytesIO
+
+_img_base64 = "{base64_image}"
+image = Image.open(BytesIO(base64.b64decode(_img_base64)))
+
+import matplotlib.pyplot as plt
+plt.imshow(image)
+plt.axis('off')
+plt.show()
+"""
+
 def base64_to_image(base64_string: str) -> Image.Image:
     image_data = base64.b64decode(base64_string)
     image = Image.open(BytesIO(image_data))
     return image
+
+def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
+    buffer = BytesIO()
+    img.save(buffer, format=format)
+    buffer.seek(0)
+    img_bytes = buffer.read()
+    img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+    return img_base64
+
 
 test_sid = 'debug_jupyter_250701'
 test_timeout = 5
@@ -72,12 +95,15 @@ test_timeout = 5
 #     }
 # ).json()
 
+target_image = Image.open('highlighted_space.jpg').convert('RGB')
+target_image_base64 = image_to_base64(target_image)
+code_string = INITIALIZATION_CODE_TEMPLATE.format(base64_image=target_image_base64)
 res2 = requests.post(
     # 'http://10.39.10.230:12345/jupyter_sandbox',
     'http://127.0.0.1:12345/jupyter_sandbox',
     json={
         "session_id": test_sid,
-        "code": code_3,
+        "code": code_string,
         "timeout": test_timeout,
     }
 ).json()
