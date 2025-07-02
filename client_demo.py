@@ -45,6 +45,9 @@ plt.imshow(img_crop)
 plt.axis('off')
 plt.show()
 
+# 中文注释
+print('打印中文输出')
+
 img_crop2 = img.crop((400, 600, 800, 1200))  # Crop another part of the image
 plt.imshow(img_crop2)
 plt.axis('off')

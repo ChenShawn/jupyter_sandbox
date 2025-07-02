@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
+import io
+import re
 import base64
 import argparse
 import uvicorn
@@ -20,7 +22,6 @@ from typing import Dict, Optional, Any, List
 
 # jupyter sandbox imports
 from IPython.terminal.embed import InteractiveShellEmbed
-import io
 import redis
 import cloudpickle
 import base64
@@ -312,6 +313,9 @@ sys.modules["joblib"] = None
 sys.modules["resource"] = None
 sys.modules["psutil"] = None
 sys.modules["tkinter"] = None
+
+import matplotlib.pyplot as plt
+plt.tight_layout()
 """
 
 RC = RedisClient()
@@ -349,6 +353,7 @@ def save_namespace_to_redis(session_id, user_ns):
     RC.conn.set(session_id, serialized)
     RC.conn.expire(session_id, 3600)
     RC.conn.incr(f"{session_id}--call_cnt")
+    RC.conn.expire(f"{session_id}--call_cnt", 7200)
 
 def get_interactive_shell_from_redis(session_id: str) -> InteractiveShellEmbed:
     """
@@ -363,8 +368,13 @@ def get_interactive_shell_from_redis(session_id: str) -> InteractiveShellEmbed:
         user_ns = {}
         shell.run_cell(SAFE_PREFIX)
         RC.conn.set(f"{session_id}--call_cnt", 0)
+        RC.conn.expire(f"{session_id}--call_cnt", 7200)
 
     return shell
+
+def strip_ansi(s):
+    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    return ansi_escape.sub('', s)
 
 def run_notebook_code(shell: InteractiveShellEmbed, code: str, timeout: float) -> Dict[str, Any]:
     is_valid, errmsg = is_valid_python(code)
@@ -389,29 +399,40 @@ def run_notebook_code(shell: InteractiveShellEmbed, code: str, timeout: float) -
 
     shell.showtraceback = custom_traceback
 
+    origin_plot_func = plt.show
+    def plot_callback(*args, **kwargs):
+        # Capture matplotlib figures
+        for fig_num in plt.get_fignums():
+            fig = plt.figure(fig_num)
+            fig.tight_layout()
+            buf = io.BytesIO()
+            fig.savefig(buf, bbox_inches='tight', format='png')
+            buf.seek(0)
+            img_b64 = base64.b64encode(buf.read()).decode('utf-8')
+            images.append(img_b64)
+        
+        plt.close()
+        return origin_plot_func(*args, **kwargs)
+
     try:
+        plt.show = plot_callback
         with contextlib.redirect_stdout(stdout_buf):
             with time_limit(timeout):
                 cell = shell.run_cell(code)
                 result = getattr(cell, 'result', None)
     finally:
         shell.showtraceback = original_showtraceback
+        plt.show = origin_plot_func
+        plt.close()
 
-        # Capture matplotlib figures
-        for fig_num in plt.get_fignums():
-            fig = plt.figure(fig_num)
-            buf = io.BytesIO()
-            fig.savefig(buf, format='png')
-            plt.close(fig)
-            buf.seek(0)
-            img_b64 = base64.b64encode(buf.read()).decode('utf-8')
-            images.append(img_b64)
-
+    stdout_string = strip_ansi(stdout_buf.getvalue())
+    stderr_string = strip_ansi(stderr_buf.getvalue())
     return {
         'result': str(result),
-        'stdout': stdout_buf.getvalue(),
-        'stderr': stderr_buf.getvalue(),
-        'images': images
+        'stdout': stdout_string,
+        'stderr': stderr_string,
+        'images': images,
+        "debug_info": {"msg": ""}
     }
 
 
@@ -475,13 +496,12 @@ async def jupyter_sandbox(request: Request):
     return {"status": "success"}
 
 
+"""
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FastAPI server for code sandbox.")
     parser.add_argument("--port", type=int, default=12345, help="Port to run the FastAPI server on.")
     args = parser.parse_args()
 
     uvicorn.run("fast_api_server:app", host="0.0.0.0", port=args.port, reload=False)
-
-
-
+"""
 
