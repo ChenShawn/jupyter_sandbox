@@ -12,5 +12,5 @@ Step 1: Start a redis server, change the redis host, port, and password in `redi
 
 Step 2: Start serving
 ```bash
-python fast_api_server.py
+bash start_serving.sh
 ```
