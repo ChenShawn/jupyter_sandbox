@@ -62,8 +62,11 @@ from io import BytesIO
 _img_base64 = "{base64_image}"
 image = Image.open(BytesIO(base64.b64decode(_img_base64)))
 
+# dsadsfarg
+
 import matplotlib.pyplot as plt
 plt.imshow(image)
+plt.title('中文测试')
 plt.axis('off')
 plt.show()
 """
@@ -82,7 +85,7 @@ def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
     return img_base64
 
 
-test_sid = 'debug_jupyter_250701'
+test_sid = 'debug_jupyter_250707'
 test_timeout = 5
 
 # res1 = requests.post(
