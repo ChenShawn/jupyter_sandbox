@@ -1,8 +1,10 @@
 import random
 import requests
+import grequests
 import base64
 from PIL import Image
 from io import BytesIO
+from datetime import datetime
 
 code_1 = """
 import matplotlib.pyplot as plt
@@ -14,9 +16,9 @@ plt.plot(x, y)
 plt.title('Debug Plot')
 plt.show()
 
-# import time
-# while True:
-#     time.sleep(1)
+import time
+while True:
+    time.sleep(1)
 """
 
 code_2 = """
@@ -91,17 +93,25 @@ def image_to_base64(img: Image.Image, format: str = "PNG") -> str:
 test_sid = 'debug_jupyter_250805'
 test_timeout = 5
 
-res1 = requests.post(
-    # 'http://10.39.10.230:12345/jupyter_sandbox',
-    'http://127.0.0.1:80/jupyter_sandbox',
-    json={
-        "session_id": test_sid,
-        "code": code_1,
-        "timeout": test_timeout,
-    }
-).json()
+reqlist = []
+for it in range(128):
+    res1 = grequests.post(
+        # 'http://10.39.10.230:12345/jupyter_sandbox',
+        'http://127.0.0.1:80/jupyter_sandbox',
+        json={
+            "session_id": test_sid,
+            "code": code_1,
+            "timeout": test_timeout,
+        }
+    )
+    reqlist.append(res1)
 
-print(res1)
+time_before = datetime.now()
+reslist = grequests.map(reqlist)
+reslist = [res.json() for res in reslist]
+time_after = datetime.now()
+time_duration = time_after - time_before
+print(f" [*] Complete {len(reqlist)} requests in :", time_duration)
 exit()
 
 target_image = Image.open('highlighted_space.jpg').convert('RGB')
