@@ -1,0 +1,41 @@
+# --- Web / API ---
+fastapi
+uvicorn
+
+# --- Serialization / Utilities ---
+cloudpickle
+ipython
+
+# --- Image / Visualization ---
+pillow
+matplotlib
+
+# --- Storage / Cache ---
+redis
+
+# --- Core Scientific Stack ---
+numpy
+scipy
+pandas
+
+# --- Machine Learning / Deep Learning ---
+scikit-learn
+torch
+torchvision
+torchaudio
+
+# 如果你也用 TensorFlow，可以加入：
+# tensorflow
+
+# --- NLP / Tokenization（常见需求） ---
+transformers
+sentencepiece
+
+# --- Jupyter & Debugging Tools ---
+jupyter
+ipykernel
+
+# --- Misc Tools ---
+tqdm
+seaborn
+
