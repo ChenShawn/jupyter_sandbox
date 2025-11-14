@@ -6,9 +6,35 @@ Yet another code sandbox for agent RL training ... but in jupyter notebook style
 - Like jupyter notebook, if the last line of code has no left value, the right value will be returned via `result` field.
 - While there is no docker or any other vitualization, to ensure safety, all code executions are guarded by HumanEval safe prefix.
 
-Usage:
+## Usage
+### 1. Docker Virtualization
+The docker image of this repo can be found on [this dockerhub repo](https://hub.docker.com/repository/docker/chenshawn6915/multimodal-ipython-sandbox/general).
+```bash
+docker pull chenshawn6915/multimodal-ipython-sandbox:latest
+```
 
-Step 1: Start a redis server, change the redis host, port, and password in `redis_client.py` based on your redis.conf
+Execution:
+```bash
+docker run -d -p 18901-18904:18901-18904 chenshawn6915/multimodal-ipython-sandbox:latest
+```
+
+By default, there will be 4 code sandbox processes running on ports 18901-18904 respectively.
+You can change the port mapping by modifying `-p 18901-18904:18901-18904` as you wish.
+
+Testing:
+```bash
+python client_demo.py
+```
+
+### 2. Local Deployment
+**NOTE:** Running this code sandbox on your local machine is **DANGEROUS**, as model-generated code execution can lead to unexpected behavior.
+**DO NOT** do this unless for debugging purposes. We are not responsible for any harm that may result from your code generation.
+
+Step 1: Install redis according to [their official installation documentation](https://redis.io/docs/latest/operate/oss_and_stack/install/archive/install-redis/install-redis-from-source/)
+
+> Make sure that redis-server and redis-cli are properly installed:
+> which redis-server
+> which redis-cli
 
 Step 2: Start serving
 ```bash
