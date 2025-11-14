@@ -92,7 +92,7 @@ test_sid = 'debug_jupyter_250805'
 test_timeout = 5
 
 res1 = requests.post(
-    'http://10.39.21.6:16598/jupyter_sandbox',
+    'http://127.0.0.1:18902/jupyter_sandbox',
     json={
         "session_id": test_sid,
         "code": code_1,
@@ -107,7 +107,7 @@ target_image_base64 = image_to_base64(target_image)
 code_string = INITIALIZATION_CODE_TEMPLATE.format(base64_image=target_image_base64)
 res2 = requests.post(
     # 'http://10.39.10.230:12345/jupyter_sandbox',
-    'http://10.39.21.6:16598/jupyter_sandbox',
+    'http://127.0.0.1:18902/jupyter_sandbox',
     json={
         "session_id": test_sid,
         "code": code_string,
